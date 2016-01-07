@@ -1,11 +1,12 @@
 #include <iostream>
 #include <fstream>
+#include <string>
 using namespace std;
 
 enum token {COMMA,PERIOD,Q_MARK,LEFT_PAREN,RIGHT_PAREN,COLON,
   COLON_DASH,SCHEMES,FACTS,RULES,QUERIES,ID,STRING,END_FILE};
 
-enum State {QUOTE,MASTER,ID,COLON};
+enum State {QUOTE_,MASTER_,ID_,COLON_}; // to not be confused with the token type
 
 int main(int argc, char** argv)
 {
@@ -17,23 +18,37 @@ int main(int argc, char** argv)
 
   ifstream infile;
   infile.open(argv[1]);
-  char c,b;
-  State state = DEFAULT;
-  while (b=infile.get(c))
+  char c;
+  State state = MASTER_;
+  string tstr = "";
+  while (infile.get(c))
   {
     switch (state)
     {
-      case DEFAULT:
+      case QUOTE_:
+        tstr += c;
+        if (c=='\'')
+        {
+          state = MASTER_;
+          //do something to handle updating tstr
+          cout << tstr << endl;
+          tstr = "";
+        }
         break;
-      case MASTER:
+      case MASTER_:
+
+        if (c=='\'')
+        {
+          state = QUOTE_;
+          tstr = "'";
+        }
         break;
-      case ID:
+      case ID_:
         break;
-      case COLON:
+      case COLON_:
         break;
     }
-    cout << c;
   }
-  cout << "infile: " << argv[1] <<endl;
-  cout << "outfile: " << argv[2] << endl;
+//  cout << "infile: " << argv[1] <<endl;
+//  cout << "outfile: " << argv[2] << endl;
 }
