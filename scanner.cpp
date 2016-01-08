@@ -14,80 +14,67 @@ enum State {QUOTE_,MASTER_,ID_,COLON_,ERR_}; // to not be confused with the toke
 
 struct tok
 {
-  int count;
+  int line;
   token t; //type
   string s; //token string
 };
 
+struct state_info
+{
+  vector<tok> toks;
+  State state;
+  string tstr;
+  int lines;
+};
+
 vector<string> token_names = {"COMMA","PERIOD","Q_MARK","LEFT_PAREN","RIGHT_PAREN","COLON",
-  "COLON_DASH","SCHEMES","FACTS","RULES","QUERIES","ID","STRING","END_FILE"};
+  "COLON_DASH","SCHEMES","FACTS","RULES","QUERIES","ID","STRING","EOF"};
 
 map<char, token> one_char_toks = {{'(',LEFT_PAREN}, {')',RIGHT_PAREN}, {'?', Q_MARK}, {',', COMMA}, {'.', PERIOD}};
 
-State state_from_char(char c);
-void add_tok(vector<tok>& toks,string tok_str,token tok_type);
-vector<tok> tok_summary(vector<tok> toks);
+map<string, token> keywords = {{"Schemes",SCHEMES},{"Facts",FACTS},{"Rules",RULES},{"Queries",QUERIES}};
+
+void state_from_char(char c, state_info& state);
+void set_new_state(char c, state_info& state);
+void add_tok(state_info& state,token tok_type);
 void print_toks(vector<tok>& toks);
 void print_tok(tok t);
 vector<tok> gen_tok_list(char* filename);
+void handle_id(char c, state_info& state);
+void handle_colon(char c, state_info& state);
+void hande_quote(char c, state_info& state);
+
 
 //state_from_char assumes that c was the next character after a token ended.
 //An example situation is when an ID is followed by a comma, ending the token
 // This function determines the new state and performs any needed actions (like adding the comma).
-State state_from_char(char c, vector<tok>& toks,string & tstr)
+void state_from_char(char c, state_info& state)
 {
-	tstr = ""; // if we just finished a token, tstr should reset
-	tstr += c;
-	if (c==':') return COLON_;
-
-	if (one_char_toks.find(c) != one_char_toks.end())
+	state.tstr = ""; // if we just finished a token, tstr should reset
+	state.tstr += c;
+	if (c==':') state.state = COLON_;
+	else if (one_char_toks.find(c) != one_char_toks.end())
 	{
-		add_tok(toks, tstr, one_char_toks[c]);
-		return MASTER_;
+		add_tok(state, one_char_toks[c]);
+		state.state = MASTER_;
 	}
-
-	if (isspace(c)) return MASTER_;
-
-	if (c == '\'') return QUOTE_;
-
-	if (isalpha(c)) return ID_;
-
-	return ERR_; // not a whitespace separator, but not the start of a valid token
 }
 
-void add_tok(vector<tok>& toks,string tok_str,token tok_type)
+void set_new_state(char c, state_info& state)
+{
+	if (isspace(c)) state.state = MASTER_;
+	else if (c == '\'') state.state = QUOTE_;
+	else if (isalpha(c)) state.state = ID_;
+	else state.state = ERR_; // not a whitespace separator, but not the start of a valid token
+}
+
+void add_tok(state_info& state,token tok_type)
 {
   tok temp;
-  temp.s = tok_str;
+  temp.s = state.tstr;
   temp.t = tok_type;
-  temp.count = 1;
-  toks.push_back(temp);
-}
-
-vector<tok> tok_summary(vector<tok> toks)
-{
-	vector<tok> res;
-	for (unsigned int i=0; i < toks.size(); i++)
-	{
-		if (!toks[i].count)
-		{
-			continue;
-		}
-		else
-		{
-			string s = toks[i].s;
-			for (unsigned int j = i+1;j<toks.size();j++)
-			{
-				if (toks[j].s == s)
-				{
-					toks[i].count++;
-					toks[j].count = 0;
-				}
-			}
-			res.push_back(toks[i]);
-		}
-  }
-  return res;
+  temp.line = state.lines;
+  (state.toks).push_back(temp);
 }
 
 void print_toks(vector<tok>& toks)
@@ -100,72 +87,98 @@ void print_toks(vector<tok>& toks)
 
 void print_tok(tok t)
 {
-  cout << "(" << token_names[t.t] << ",\"" << t.s << "\","<< t.count << ")" << endl;
+  cout << "(" << token_names[t.t] << ",\"" << t.s << "\","<< t.line << ")" << endl;
+}
+
+void handle_id(char c, state_info& state)
+{
+  if (!isalnum(c))
+  {
+    if (keywords.find(state.tstr) != keywords.end())
+    {
+      add_tok(state,keywords[state.tstr]);
+    }
+    else add_tok(state,ID);
+    state_from_char(c,state);
+  }
+  else state.tstr += c;
+}
+
+void handle_colon(char c, state_info& state)
+{
+
+}
+
+void hande_quote(char c, state_info& state)
+{
+
 }
 
 vector<tok> gen_tok_list(char* filename)
 {
 	char c;
-	int lines = 1;
-	State state = MASTER_;
-	string tstr = "";
-	vector<tok> toks;
+  state_info state;
+  state.state = MASTER_;
+  state.tstr = "";
+  state.lines = 1;
 	ifstream in;
 	in.open(filename);
 
 	while (in.get(c))
 	{
-		if (c == '\n') lines++;
-//		cout << c;
-//		continue;
-		switch (state)
+		switch (state.state)
 		{
 			case QUOTE_:
-				tstr += c;
+				state.tstr += c;
 				if (c=='\'')
 				{
-					state = MASTER_;
+					state.state = MASTER_;
 					//do something to handle updating tstr
-					add_tok(toks,tstr,STRING);
-					tstr = "";
+					add_tok(state,STRING);
+					state.tstr = "";
 				}
 				break;
 			case MASTER_:
-				state = state_from_char(c,toks,tstr);
+				state_from_char(c,state);
 				break;
 			case ID_: // we are in the process of reading an ID
-				if (!isalnum(c))
-				{
-					add_tok(toks,tstr,ID);
-					state = state_from_char(c,toks,tstr);
-				}
-				else tstr += c;
+        handle_id(c, state);
 				break;
 			case COLON_:
 				if (c == '-')
 				{
-					tstr = "";
+					state.tstr = ":-";
 					//append token to my data structure
-					add_tok(toks,":-",COLON_DASH);
-					state = MASTER_; //wait for another token to begin ...
+					add_tok(state,COLON_DASH);
+					state.state = MASTER_; //wait for another token to begin ...
 				}
 				else
 				{
 					//write out colon token to my data structure (token list)
-					add_tok(toks,":",COLON);
-					state = state_from_char(c,toks,tstr);
+          state.tstr = ":";
+					add_tok(state,COLON);
+					state_from_char(c,state);
 				}
 				break;
 			case ERR_:
 				//halt execution, print error message
-				vector<tok> tok_sum = tok_summary(toks);
-				print_toks(tok_sum);
-				cout << "error on line " << lines << endl;
+				print_toks(state.toks);
+				cout << "error on line " << state.lines << endl;
 				exit(1);
 				break;
 		}
+
+    //increment line count if needed
+    if (c == '\n') {
+//      cout << endl << state.lines << " ";
+      state.lines++;
+    }
+
+    // cout << c; //for debugging purposes
 	}
-	return toks;
+  state.tstr = "";
+  add_tok(state,END_FILE);
+	return state.toks;
 }
 
 int main(int argc, char** argv)
@@ -177,8 +190,6 @@ int main(int argc, char** argv)
 	}
 
 	vector<tok> toks = gen_tok_list(argv[1]);
-	unsigned int num_toks = toks.size();
-	toks = tok_summary(toks);
 	print_toks(toks);
-	cout << "Total Tokens = " << num_toks << endl;
+	cout << "Total Tokens = " << toks.size() << endl;
 }
