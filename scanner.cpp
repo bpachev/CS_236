@@ -26,24 +26,23 @@ map<char, token> one_char_toks = {{'(',LEFT_PAREN}, {')',RIGHT_PAREN}, {'?', Q_M
 
 State state_from_char(char c);
 void add_tok(vector<tok>& toks,string tok_str,token tok_type);
-vector<tok> tok_summary(vector<tok> toks)
+vector<tok> tok_summary(vector<tok> toks);
 void print_toks(vector<tok>& toks);
 void print_tok(tok t);
-
-vector<tok> gen_tok_list(ifstream in);
+vector<tok> gen_tok_list(char* filename);
 
 //state_from_char assumes that c was the next character after a token ended.
 //An example situation is when an ID is followed by a comma, ending the token
 // This function determines the new state and performs any needed actions (like adding the comma).
 State state_from_char(char c, vector<tok>& toks,string & tstr)
 {
-	tstr = ""+c; // if we just finished a token, tstr should reset
+	tstr = ""; // if we just finished a token, tstr should reset
+	tstr += c;
 	if (c==':') return COLON_;
-	}
 
 	if (one_char_toks.find(c) != one_char_toks.end())
 	{
-		add_tok(toks, ""+c, one_char_toks[c]);
+		add_tok(toks, tstr, one_char_toks[c]);
 		return MASTER_;
 	}
 
@@ -104,17 +103,21 @@ void print_tok(tok t)
   cout << "(" << token_names[t.t] << ",\"" << t.s << "\","<< t.count << ")" << endl;
 }
 
-vector<tok> gen_tok_list(ifstream in)
+vector<tok> gen_tok_list(char* filename)
 {
 	char c;
 	int lines = 1;
 	State state = MASTER_;
 	string tstr = "";
 	vector<tok> toks;
+	ifstream in;
+	in.open(filename);
 
-	while (infile.get(c))
+	while (in.get(c))
 	{
 		if (c == '\n') lines++;
+//		cout << c;
+//		continue;
 		switch (state)
 		{
 			case QUOTE_:
@@ -123,9 +126,7 @@ vector<tok> gen_tok_list(ifstream in)
 				{
 					state = MASTER_;
 					//do something to handle updating tstr
-					cout << tstr << endl;
 					add_tok(toks,tstr,STRING);
-					cout << toks.size() << endl;
 					tstr = "";
 				}
 				break;
@@ -164,6 +165,7 @@ vector<tok> gen_tok_list(ifstream in)
 				break;
 		}
 	}
+	return toks;
 }
 
 int main(int argc, char** argv)
@@ -174,11 +176,8 @@ int main(int argc, char** argv)
 		exit(1);
 	}
 
-	ifstream infile;
-	infile.open(argv[1]);
-	vector<tok> toks = gen_tok_list(infile);
+	vector<tok> toks = gen_tok_list(argv[1]);
 	unsigned int num_toks = toks.size();
-	print_toks(toks);
 	toks = tok_summary(toks);
 	print_toks(toks);
 	cout << "Total Tokens = " << num_toks << endl;
