@@ -8,7 +8,7 @@ using namespace std;
 enum token {COMMA,PERIOD,Q_MARK,LEFT_PAREN,RIGHT_PAREN,COLON,
   COLON_DASH,SCHEMES,FACTS,RULES,QUERIES,ID,STRING,END_FILE};
 
-enum State {QUOTE_,MASTER_,ID_,COLON_}; // to not be confused with the token type
+enum State {QUOTE_,MASTER_,ID_,COLON_,ERR_}; // to not be confused with the token type
 
 struct tok
 {
@@ -23,7 +23,11 @@ vector<string> token_names = {"COMMA","PERIOD","Q_MARK","LEFT_PAREN","RIGHT_PARE
 void add_tok(vector<tok>& toks,string tok_str,token tok_type);
 void print_toks(vector<tok>& toks);
 void print_tok(tok t);
-
+State state_from_char(char c)
+{
+  if (c==":") return COLON_;
+  return ERR_;
+}
 
 void add_tok(vector<tok>& toks,string tok_str,token tok_type)
 {
@@ -84,7 +88,7 @@ int main(int argc, char** argv)
           //do something to handle updating tstr
           cout << tstr << endl;
           add_tok(toks,tstr,STRING);
-          cout << toks.size() << endl;          
+          cout << toks.size() << endl;
           tstr = "";
         }
         break;
@@ -101,16 +105,22 @@ int main(int argc, char** argv)
       case COLON_:
         if (c == '-')
         {
-          tstr = ":-";
+          tstr = "";
           //append token to my data structure ...
-          add_tok(toks,tstr,COLON_DASH);
+          add_tok(toks,":-",COLON_DASH);
+          state = MASTER_;
         }
         else
         {
-          tstr = ":";
+          tstr = ""+c;
           //write out colon token to my data structure
-          add_tok(toks,tstr,COLON);
+          add_tok(toks,":",COLON);
+          state = state_from_char(c);
         }
+        break;
+      case ERR_:
+        //halt execution, print error message
+        exit(1);
         break;
     }
   }
