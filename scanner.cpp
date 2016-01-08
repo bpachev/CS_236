@@ -25,6 +25,7 @@ struct state_info
   State state;
   string tstr;
   int lines;
+  int last_qoute_line;
 };
 
 vector<string> token_names = {"COMMA","PERIOD","Q_MARK","LEFT_PAREN","RIGHT_PAREN","COLON",
@@ -44,6 +45,7 @@ void handle_id(char c, state_info& state);
 void handle_colon(char c, state_info& state);
 void handle_quote(char c, state_info& state);
 void set_new_state(char c, state_info& state);
+void cleanup_tokens(state_info& state);
 
 
 //state_from_char assumes that c was the next character after a token ended.
@@ -65,7 +67,11 @@ void state_from_char(char c, state_info& state)
 void set_new_state(char c, state_info& state)
 {
 	if (isspace(c)) state.state = MASTER_;
-	else if (c == '\'') state.state = QUOTE_;
+	else if (c == '\'')
+  {
+    state.state = QUOTE_;
+    state.last_qoute_line = state.lines;
+  }
 	else if (isalpha(c)) state.state = ID_;
   else if (c == '#') state.state = COMMENT_; //start of comment
 	else state.state = ERR_; // not a whitespace separator, but not the start of a valid token
@@ -137,6 +143,24 @@ void handle_quote(char c, state_info& state)
   }
 }
 
+void cleanup_tokens(state_info& state)
+{
+  if (state.state == QUOTE_)
+  {
+    print_toks(state.toks);
+    cout << "Input Error on line " << state.last_qoute_line << endl;
+    exit(1);
+  }
+  else if (state.state == ID_)
+  {
+    handle_id(' ', state);
+  }
+  else if (state.state == COLON_)
+  {
+    handle_colon(' ', state);
+  }
+}
+
 vector<tok> gen_tok_list(char* filename)
 {
 	char c;
@@ -180,6 +204,8 @@ vector<tok> gen_tok_list(char* filename)
     }
 	}
 
+  //check for missing closing quote, unsaved ID, or colon
+  cleanup_tokens(state);
   state.tstr = "";
   add_tok(state,END_FILE);
 	return state.toks;
