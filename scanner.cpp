@@ -10,7 +10,7 @@ using namespace std;
 enum token {COMMA,PERIOD,Q_MARK,LEFT_PAREN,RIGHT_PAREN,COLON,
   COLON_DASH,SCHEMES,FACTS,RULES,QUERIES,ID,STRING,END_FILE};
 
-enum State {QUOTE_,MASTER_,ID_,COLON_,ERR_}; // to not be confused with the token type
+enum State {QUOTE_,MASTER_,ID_,COLON_,COMMENT_,ERR_}; // to not be confused with the token type
 
 struct tok
 {
@@ -42,7 +42,8 @@ void print_tok(tok t);
 vector<tok> gen_tok_list(char* filename);
 void handle_id(char c, state_info& state);
 void handle_colon(char c, state_info& state);
-void hande_quote(char c, state_info& state);
+void handle_quote(char c, state_info& state);
+void set_new_state(char c, state_info& state);
 
 
 //state_from_char assumes that c was the next character after a token ended.
@@ -58,6 +59,7 @@ void state_from_char(char c, state_info& state)
 		add_tok(state, one_char_toks[c]);
 		state.state = MASTER_;
 	}
+  else set_new_state(c, state);
 }
 
 void set_new_state(char c, state_info& state)
@@ -65,6 +67,7 @@ void set_new_state(char c, state_info& state)
 	if (isspace(c)) state.state = MASTER_;
 	else if (c == '\'') state.state = QUOTE_;
 	else if (isalpha(c)) state.state = ID_;
+  else if (c == '#') state.state = COMMENT_; //start of comment
 	else state.state = ERR_; // not a whitespace separator, but not the start of a valid token
 }
 
@@ -106,12 +109,32 @@ void handle_id(char c, state_info& state)
 
 void handle_colon(char c, state_info& state)
 {
-
+  if (c == '-')
+  {
+    state.tstr = ":-";
+    //append token to my data structure
+    add_tok(state,COLON_DASH);
+    state.state = MASTER_; //wait for another token to begin ...
+  }
+  else
+  {
+    //write out colon token to my data structure (token list)
+    state.tstr = ":";
+    add_tok(state,COLON);
+    state_from_char(c,state);
+  }
 }
 
-void hande_quote(char c, state_info& state)
+void handle_quote(char c, state_info& state)
 {
-
+  state.tstr += c;
+  if (c=='\'')
+  {
+    state.state = MASTER_;
+    //do something to handle updating tstr
+    add_tok(state,STRING);
+    state.tstr = "";
+  }
 }
 
 vector<tok> gen_tok_list(char* filename)
@@ -129,14 +152,7 @@ vector<tok> gen_tok_list(char* filename)
 		switch (state.state)
 		{
 			case QUOTE_:
-				state.tstr += c;
-				if (c=='\'')
-				{
-					state.state = MASTER_;
-					//do something to handle updating tstr
-					add_tok(state,STRING);
-					state.tstr = "";
-				}
+        handle_quote(c,state);
 				break;
 			case MASTER_:
 				state_from_char(c,state);
@@ -145,48 +161,41 @@ vector<tok> gen_tok_list(char* filename)
         handle_id(c, state);
 				break;
 			case COLON_:
-				if (c == '-')
-				{
-					state.tstr = ":-";
-					//append token to my data structure
-					add_tok(state,COLON_DASH);
-					state.state = MASTER_; //wait for another token to begin ...
-				}
-				else
-				{
-					//write out colon token to my data structure (token list)
-          state.tstr = ":";
-					add_tok(state,COLON);
-					state_from_char(c,state);
-				}
+        handle_colon(c,state);
 				break;
+      case COMMENT_:
+        if (c=='\n') state.state = MASTER_;
+        break;
 			case ERR_:
 				//halt execution, print error message
 				print_toks(state.toks);
-				cout << "error on line " << state.lines << endl;
+				cout << "Input Error on line " << state.lines << endl;
 				exit(1);
 				break;
 		}
 
     //increment line count if needed
     if (c == '\n') {
-//      cout << endl << state.lines << " ";
       state.lines++;
     }
-
-    // cout << c; //for debugging purposes
 	}
+
   state.tstr = "";
   add_tok(state,END_FILE);
 	return state.toks;
 }
 
+void die_with_msg(string msg)
+{
+  cout << msg << endl;
+  exit(1);
+}
+
 int main(int argc, char** argv)
 {
-	if (argc<3)
+	if (argc<2)
 	{
-		cout << "Not enough arguments." << endl;
-		exit(1);
+		die_with_msg("Not enough arguments. You must provide a valid infile.");
 	}
 
 	vector<tok> toks = gen_tok_list(argv[1]);
