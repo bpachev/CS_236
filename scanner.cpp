@@ -35,17 +35,24 @@ map<char, token> one_char_toks = {{'(',LEFT_PAREN}, {')',RIGHT_PAREN}, {'?', Q_M
 
 map<string, token> keywords = {{"Schemes",SCHEMES},{"Facts",FACTS},{"Rules",RULES},{"Queries",QUERIES}};
 
+ofstream out;
+ifstream in;
+
+
 void state_from_char(char c, state_info& state);
 void set_new_state(char c, state_info& state);
 void add_tok(state_info& state,token tok_type);
 void print_toks(vector<tok>& toks);
 void print_tok(tok t);
-vector<tok> gen_tok_list(char* filename);
+int gen_tok_list(char* filename,vector<tok>& toks);
 void handle_id(char c, state_info& state);
 void handle_colon(char c, state_info& state);
 void handle_quote(char c, state_info& state);
 void set_new_state(char c, state_info& state);
-void cleanup_tokens(state_info& state);
+int cleanup_tokens(state_info& state);
+void line_error(int line);
+void die_with_msg(string msg);
+
 
 
 //state_from_char assumes that c was the next character after a token ended.
@@ -96,7 +103,7 @@ void print_toks(vector<tok>& toks)
 
 void print_tok(tok t)
 {
-  cout << "(" << token_names[t.t] << ",\"" << t.s << "\","<< t.line << ")" << endl;
+  out << "(" << token_names[t.t] << ",\"" << t.s << "\","<< t.line << ")" << endl;
 }
 
 void handle_id(char c, state_info& state)
@@ -143,13 +150,13 @@ void handle_quote(char c, state_info& state)
   }
 }
 
-void cleanup_tokens(state_info& state)
+int cleanup_tokens(state_info& state)
 {
   if (state.state == QUOTE_)
   {
     print_toks(state.toks);
-    cout << "Input Error on line " << state.last_qoute_line << endl;
-    exit(1);
+    line_error(state.last_qoute_line);
+    return 1;
   }
   else if (state.state == ID_)
   {
@@ -159,16 +166,16 @@ void cleanup_tokens(state_info& state)
   {
     handle_colon(' ', state);
   }
+  return 0;
 }
 
-vector<tok> gen_tok_list(char* filename)
+int gen_tok_list(char* filename, vector<tok>& toks)
 {
 	char c;
   state_info state;
   state.state = MASTER_;
   state.tstr = "";
   state.lines = 1;
-	ifstream in;
 	in.open(filename);
 
 	while (in.get(c))
@@ -193,9 +200,9 @@ vector<tok> gen_tok_list(char* filename)
 			case ERR_:
 				//halt execution, print error message
 				print_toks(state.toks);
-				cout << "Input Error on line " << state.lines << endl;
-				exit(1);
-				break;
+        line_error(state.lines);
+        in.close();
+        return 1;
 		}
 
     //increment line count if needed
@@ -204,27 +211,40 @@ vector<tok> gen_tok_list(char* filename)
     }
 	}
 
+  in.close();
   //check for missing closing quote, unsaved ID, or colon
-  cleanup_tokens(state);
+  if (cleanup_tokens(state)!=0) return 1; //error
   state.tstr = "";
   add_tok(state,END_FILE);
-	return state.toks;
+  toks = state.toks;
+	return 0;
+}
+
+void line_error(int line)
+{
+  out << "Input Error on line " + to_string(line) << endl;
+  out.close();
 }
 
 void die_with_msg(string msg)
 {
   cout << msg << endl;
-  exit(1);
+  in.close();
+  out.close();
+  exit(0);
 }
 
 int main(int argc, char** argv)
 {
-	if (argc<2)
+	if (argc<3)
 	{
 		die_with_msg("Not enough arguments. You must provide a valid infile.");
 	}
 
-	vector<tok> toks = gen_tok_list(argv[1]);
+  out.open(argv[2]);
+  vector<tok> toks;
+	if (gen_tok_list(argv[1],toks)) return 0; // an error occured, break out of main
 	print_toks(toks);
-	cout << "Total Tokens = " << toks.size() << endl;
+	out << "Total Tokens = " << toks.size() << endl;
+  out.close();
 }
