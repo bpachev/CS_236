@@ -1,0 +1,6 @@
+(SCHEMES,"Schemes",5)
+(FACTS,"Facts",6)
+(RULES,"Rules",7)
+(QUERIES,"Queries",8)
+(EOF,"",11)
+Total Tokens = 5
