@@ -1,9 +1,0 @@
-
-
-# unterminated string
-
-'good string'
-
-'bad string
-
-

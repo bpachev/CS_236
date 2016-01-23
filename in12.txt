@@ -1,9 +1,0 @@
-
-
-# non-dash after colon
-
-   :-
-
-   ::
-
-
