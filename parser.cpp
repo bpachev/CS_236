@@ -38,13 +38,15 @@ void Parser::parse(char * infile){
 	Scanner * s = new Scanner();
 	try {
 		s->scan(infile);
+		// print_toks(s->toks,cout);
+		toks = s->toks;
+		it = toks.begin();
+		curr = *it;
+		datalogProgram();
 	}
 	catch (exception e) {
 		throw;
 	}
-
-	toks = s->toks;
-	it = toks.begin();
 }
 
 void Parser::datalogProgram(){
@@ -105,7 +107,10 @@ void Parser::query()
 }
 
 void Parser::predicateList(){
-	match(COMMA); predicate(); predicateList();
+	try {
+	match(COMMA); predicate();}
+	catch (exception& e) {return;}
+	predicateList();
 }
 
 void Parser::predicate(){
@@ -115,16 +120,20 @@ void Parser::predicate(){
 }
 
 void Parser::parameterList(){
-	match(COMMA);
-	parameter(); parameterList();
+	try {
+		match(COMMA);
+		parameter();
+	}
+	catch (exception& e) {return;}
+	parameterList();
 }
 
 void Parser::parameter(){
-	if (curr.t == ID)
+	if (curr.t == STRING)
 	{
 		match(STRING);
 	}
-	else if (curr.t == STRING)
+	else if (curr.t == ID)
 	{
 		match(ID);
 	}

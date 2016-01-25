@@ -4,10 +4,10 @@ class Parser
 {
  public:
    void parse(char * infile);
+   tok curr;
  private:
    vector<tok> toks;
    vector<tok>::iterator it;
-   tok curr;
    void datalogProgram();
    void schemeList();
    void factList();

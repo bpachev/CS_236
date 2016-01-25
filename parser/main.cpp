@@ -2,15 +2,25 @@
 
 int main(int argc, char** argv)
 {
+  if (argc < 3)
+  {
+    cout << "Usage: infilename outfilename" << endl;
+    return 0;
+  }
+
   ofstream out;
-//  out.open(argv[2]);
+  out.open(argv[2]);
+
   Parser* p = new Parser();
   try {
     p->parse(argv[1]);
   }
-  catch (exception e)
+  catch (exception& e)
   {
-    cout << e.what();
+    out << "Failure!" << endl;
+    out << "  ";
+    print_tok(p->curr,out);
   }
-  cout << "Hello World." << endl;
+  out << "Succes!" << endl;
+  delete p;
 }
