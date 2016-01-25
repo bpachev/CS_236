@@ -1,0 +1,18 @@
+
+
+Schemes:
+  bob(A,B)
+
+Facts:
+  bob('4','2').
+
+Rules:
+  bob(A,B) :- bob(B,A).
+
+
+# wrong punctuation for query
+
+Queries:
+  bob(X,Y).
+
+

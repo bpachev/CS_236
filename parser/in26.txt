@@ -1,0 +1,15 @@
+
+
+Schemes:
+  bob(A,B)
+
+# fact/rule lists should be optional
+
+Facts:
+
+Rules:
+
+Queries:
+  bob(X,Y)?
+
+

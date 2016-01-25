@@ -1,0 +1,20 @@
+
+
+Schemes:
+  bob(A,B)
+
+Facts:
+  bob('4','2').
+
+# rules section should exist
+# queries should come after rules
+
+Queries:
+  bob(X,Y)?
+
+# facts can't be repeated
+
+Facts:
+  bob('4','4').
+
+

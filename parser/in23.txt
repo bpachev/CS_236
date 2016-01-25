@@ -1,0 +1,20 @@
+
+
+Schemes:
+  bob(A,B)
+
+Facts:
+  bob('4','2').
+
+Rules:
+  bob(A,B) :- bob(B,A).
+
+Queries:
+  bob(X,Y)?
+
+
+# extra tokens at end of file
+
+????
+
+
