@@ -1,5 +1,5 @@
 #include "token.h"
-
+#include "scanner.h"
 
 struct state_info
 {
@@ -20,22 +20,10 @@ map<string, token> keywords = {{"Schemes",SCHEMES},{"Facts",FACTS},{"Rules",RULE
 ofstream out;
 ifstream in;
 
-
-void state_from_char(char c, state_info& state);
-void set_new_state(char c, state_info& state);
-void add_tok(state_info& state,token tok_type);
-void print_toks(vector<tok>& toks);
-void print_tok(tok t);
-int gen_tok_list(char* filename,vector<tok>& toks);
-void handle_id(char c, state_info& state);
-void handle_colon(char c, state_info& state);
-void handle_quote(char c, state_info& state);
-void set_new_state(char c, state_info& state);
-int cleanup_tokens(state_info& state);
-void line_error(int line);
-void die_with_msg(string msg);
-
-
+void Scanner::scan(char * filename, vector<tok>& token_list)
+{
+  gen_tok_list(filename, token_list);
+}
 
 //state_from_char assumes that c was the next character after a token ended.
 //An example situation is when an ID is followed by a comma, ending the token
@@ -214,19 +202,4 @@ void die_with_msg(string msg)
   in.close();
   out.close();
   exit(0);
-}
-
-int main(int argc, char** argv)
-{
-	if (argc<3)
-	{
-		die_with_msg("Not enough arguments. You must provide a valid infile.");
-	}
-
-  out.open(argv[2]);
-  vector<tok> toks;
-	if (gen_tok_list(argv[1],toks)) return 0; // an error occured, break out of main
-	print_toks(toks);
-	out << "Total Tokens = " << toks.size() << endl;
-  out.close();
 }
