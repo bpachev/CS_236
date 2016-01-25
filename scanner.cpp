@@ -1,14 +1,5 @@
-#include "token.h"
 #include "scanner.h"
 
-struct state_info
-{
-  vector<tok> toks;
-  State state;
-  string tstr;
-  int lines;
-  int last_qoute_line;
-};
 
 vector<string> token_names = {"COMMA","PERIOD","Q_MARK","LEFT_PAREN","RIGHT_PAREN","COLON",
   "COLON_DASH","SCHEMES","FACTS","RULES","QUERIES","ID","STRING","EOF"};
@@ -20,9 +11,9 @@ map<string, token> keywords = {{"Schemes",SCHEMES},{"Facts",FACTS},{"Rules",RULE
 ofstream out;
 ifstream in;
 
-void Scanner::scan(char * filename, vector<tok>& token_list)
+int Scanner::scan(char * filename, vector<tok>& token_list)
 {
-  gen_tok_list(filename, token_list);
+  return gen_tok_list(filename, token_list);
 }
 
 //state_from_char assumes that c was the next character after a token ended.

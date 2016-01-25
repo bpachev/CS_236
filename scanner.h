@@ -1,3 +1,15 @@
+#include "token.h"
+
+struct state_info
+{
+  vector<tok> toks;
+  State state;
+  string tstr;
+  int lines;
+  int last_qoute_line;
+};
+
+
 void state_from_char(char c, state_info& state);
 void set_new_state(char c, state_info& state);
 void add_tok(state_info& state,token tok_type);
@@ -13,7 +25,8 @@ void line_error(int line);
 void die_with_msg(string msg);
 
 
-public Scanner
+class Scanner
 {
- void scan(char * filename, vector<tok>& token_list);
-}
+public:
+ int scan(char * filename, vector<tok>& token_list);
+};
