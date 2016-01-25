@@ -8,189 +8,175 @@ map<char, token> one_char_toks = {{'(',LEFT_PAREN}, {')',RIGHT_PAREN}, {'?', Q_M
 
 map<string, token> keywords = {{"Schemes",SCHEMES},{"Facts",FACTS},{"Rules",RULES},{"Queries",QUERIES}};
 
-ofstream out;
-ifstream in;
-
-int Scanner::scan(char * filename, vector<tok>& token_list)
+void Scanner::scan(char * filename)
 {
-  return gen_tok_list(filename, token_list);
+  gen_tok_list(filename);
 }
+
 
 //state_from_char assumes that c was the next character after a token ended.
 //An example situation is when an ID is followed by a comma, ending the token
 // This function determines the new state and performs any needed actions (like adding the comma).
-void state_from_char(char c, state_info& state)
+void Scanner::state_from_char(char c)
 {
-	state.tstr = ""; // if we just finished a token, tstr should reset
-	state.tstr += c;
-	if (c==':') state.state = COLON_;
+	tstr = ""; // if we just finished a token, tstr should reset
+	tstr += c;
+	if (c==':') state = COLON_;
 	else if (one_char_toks.find(c) != one_char_toks.end())
 	{
-		add_tok(state, one_char_toks[c]);
-		state.state = MASTER_;
+		add_tok(one_char_toks[c]);
+		state = MASTER_;
 	}
-  else set_new_state(c, state);
+  else set_new_state(c);
 }
 
-void set_new_state(char c, state_info& state)
+void Scanner::set_new_state(char c)
 {
-	if (isspace(c)) state.state = MASTER_;
+	if (isspace(c)) state = MASTER_;
 	else if (c == '\'')
   {
-    state.state = QUOTE_;
-    state.last_qoute_line = state.lines;
+    state = QUOTE_;
+    last_qoute_line = lines;
   }
-	else if (isalpha(c)) state.state = ID_;
-  else if (c == '#') state.state = COMMENT_; //start of comment
-	else state.state = ERR_; // not a whitespace separator, but not the start of a valid token
+	else if (isalpha(c)) state = ID_;
+  else if (c == '#') state = COMMENT_; //start of comment
+	else state = ERR_; // not a whitespace separator, but not the start of a valid token
 }
 
-void add_tok(state_info& state,token tok_type)
+void Scanner::add_tok(token tok_type)
 {
   tok temp;
-  temp.s = state.tstr;
+  temp.s = tstr;
   temp.t = tok_type;
-  temp.line = state.lines;
-  (state.toks).push_back(temp);
+  temp.line = lines;
+  (toks).push_back(temp);
 }
 
-void print_toks(vector<tok>& toks)
+void print_toks(vector<tok>& toks,  ostream& s)
 {
   for (unsigned int i = 0; i < toks.size(); i++)
   {
-    print_tok(toks[i]);
+    print_tok(toks[i], s);
   }
 }
 
-void print_tok(tok t)
+void print_tok(tok t, ostream& s)
 {
-  out << "(" << token_names[t.t] << ",\"" << t.s << "\","<< t.line << ")" << endl;
+  s << "(" << token_names[t.t] << ",\"" << t.s << "\","<< t.line << ")" << endl;
 }
 
-void handle_id(char c, state_info& state)
+void Scanner::handle_id(char c)
 {
   if (!isalnum(c))
   {
-    if (keywords.find(state.tstr) != keywords.end())
+    if (keywords.find(tstr) != keywords.end())
     {
-      add_tok(state,keywords[state.tstr]);
+      add_tok(keywords[tstr]);
     }
-    else add_tok(state,ID);
-    state_from_char(c,state);
+    else add_tok(ID);
+    state_from_char(c);
   }
-  else state.tstr += c;
+  else tstr += c;
 }
 
-void handle_colon(char c, state_info& state)
+void Scanner::handle_colon(char c)
 {
   if (c == '-')
   {
-    state.tstr = ":-";
+    tstr = ":-";
     //append token to my data structure
-    add_tok(state,COLON_DASH);
-    state.state = MASTER_; //wait for another token to begin ...
+    add_tok(COLON_DASH);
+    state = MASTER_; //wait for another token to begin ...
   }
   else
   {
     //write out colon token to my data structure (token list)
-    state.tstr = ":";
-    add_tok(state,COLON);
-    state_from_char(c,state);
+    tstr = ":";
+    add_tok(COLON);
+    state_from_char(c);
   }
 }
 
-void handle_quote(char c, state_info& state)
+void Scanner::handle_quote(char c)
 {
-  state.tstr += c;
+  tstr += c;
   if (c=='\'')
   {
-    state.state = MASTER_;
+    state = MASTER_;
     //do something to handle updating tstr
-    add_tok(state,STRING);
-    state.tstr = "";
+    add_tok(STRING);
+    tstr = "";
   }
 }
 
-int cleanup_tokens(state_info& state)
+int Scanner::cleanup_tokens(void)
 {
-  if (state.state == QUOTE_)
+  if (state == QUOTE_)
   {
-    print_toks(state.toks);
-    line_error(state.last_qoute_line);
-    return 1;
+    line_error(last_qoute_line);
   }
-  else if (state.state == ID_)
+  else if (state == ID_)
   {
-    handle_id(' ', state);
+    handle_id(' ');
   }
-  else if (state.state == COLON_)
+  else if (state == COLON_)
   {
-    handle_colon(' ', state);
+    handle_colon(' ');
   }
   return 0;
 }
 
-int gen_tok_list(char* filename, vector<tok>& toks)
+void Scanner::gen_tok_list(char* filename)
 {
+  ifstream in;
 	char c;
-  state_info state;
-  state.state = MASTER_;
-  state.tstr = "";
-  state.lines = 1;
+  state = MASTER_;
+  tstr = "";
+  lines = 1;
+  toks.clear();
 	in.open(filename);
 
 	while (in.get(c))
 	{
-		switch (state.state)
+		switch (state)
 		{
 			case QUOTE_:
-        handle_quote(c,state);
+        handle_quote(c);
 				break;
 			case MASTER_:
-				state_from_char(c,state);
+				state_from_char(c);
 				break;
 			case ID_: // we are in the process of reading an ID
-        handle_id(c, state);
+        handle_id(c);
 				break;
 			case COLON_:
-        handle_colon(c,state);
+        handle_colon(c);
 				break;
       case COMMENT_:
-        if (c=='\n') state.state = MASTER_;
+        if (c=='\n') state = MASTER_;
         break;
 			case ERR_:
 				//halt execution, print error message
-				print_toks(state.toks);
-        line_error(state.lines);
         in.close();
-        return 1;
+        line_error(lines);
 		}
 
     //increment line count if needed
     if (c == '\n') {
-      state.lines++;
+      lines++;
     }
 	}
 
   in.close();
   //check for missing closing quote, unsaved ID, or colon
-  if (cleanup_tokens(state)!=0) return 1; //error
-  state.tstr = "";
-  add_tok(state,END_FILE);
-  toks = state.toks;
-	return 0;
+  cleanup_tokens(); //error
+  tstr = "";
+  add_tok(END_FILE);
 }
 
-void line_error(int line)
+void Scanner::line_error(int line)
 {
-  out << "Input Error on line " + to_string(line) << endl;
-  out.close();
-}
-
-void die_with_msg(string msg)
-{
-  cout << msg << endl;
-  in.close();
-  out.close();
-  exit(0);
+  string error = "Input Error on line " + to_string(line);
+  error += '\n';
+  throw runtime_error(error);
 }

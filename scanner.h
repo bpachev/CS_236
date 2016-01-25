@@ -1,32 +1,26 @@
 #include "token.h"
+#include <stdexcept>
 
-struct state_info
-{
-  vector<tok> toks;
-  State state;
-  string tstr;
-  int lines;
-  int last_qoute_line;
-};
-
-
-void state_from_char(char c, state_info& state);
-void set_new_state(char c, state_info& state);
-void add_tok(state_info& state,token tok_type);
-void print_toks(vector<tok>& toks);
-void print_tok(tok t);
-int gen_tok_list(char* filename,vector<tok>& toks);
-void handle_id(char c, state_info& state);
-void handle_colon(char c, state_info& state);
-void handle_quote(char c, state_info& state);
-void set_new_state(char c, state_info& state);
-int cleanup_tokens(state_info& state);
-void line_error(int line);
-void die_with_msg(string msg);
+void print_toks(vector<tok>& toks, ostream& o);
+void print_tok(tok t, ostream& o);
 
 
 class Scanner
 {
 public:
- int scan(char * filename, vector<tok>& token_list);
+  State state;
+  string tstr;
+  vector<tok> toks;
+  int lines;
+  int last_qoute_line;
+  void scan(char * filename);
+  void gen_tok_list(char* filename);
+  void handle_id(char c);
+  void handle_colon(char c);
+  void handle_quote(char c);
+  int cleanup_tokens(void);
+  void line_error(int line);
+  void state_from_char(char c);
+  void set_new_state(char c);
+  void add_tok(token tok_type);
 };
