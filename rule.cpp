@@ -2,12 +2,12 @@
 
 string Rule::toString()
 {
-  res = result.toString();
+  string res = result->toString();
   res += " :- ";
   for (int i=0; i < premises.size(); i++)
   {
     if (i) res += ",";
-    res += premises[i].toString();
+    res += premises[i]->toString();
   }
 }
 

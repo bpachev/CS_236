@@ -1,5 +1,10 @@
 #include "predicate.h"
 
+Predicate::Predicate(string n)
+{
+  name = n;
+}
+
 string Predicate::toString()
 {
   string res = name;

@@ -1,4 +1,5 @@
 #include "parser.h"
+#include "datalogProgram.h"
 
 /*datalogProgram	->	SCHEMES COLON scheme schemeList
 		        FACTS COLON factList
@@ -36,15 +37,22 @@ parameter	->	ID*/
 
 void Parser::parse(char * infile){
 	Scanner * s = new Scanner();
+	DatalogProgram* prog;
 	try {
 		s->scan(infile);
 		// print_toks(s->toks,cout);
 		toks = s->toks;
 		it = toks.begin();
 		curr = *it;
+		prog = new DatalogProgram();
+		Predicate* p = new Predicate("BAR");
+		p->params.push_back(new Parameter((string)"FOO"));
+		prog->addScheme(p);
+		cout << prog->toString() << endl;
 		datalogProgram();
 	}
 	catch (exception e) {
+		delete prog;
 		throw;
 	}
 }

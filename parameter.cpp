@@ -1,9 +1,9 @@
 #include "parameter.h"
 
-Parameter::Parameter()
+Parameter::Parameter(string v)
 {
-  value = null;
-  name = null;
+  value = v;
+  name = "";
 }
 
 Parameter::Parameter(tok t)
@@ -18,9 +18,9 @@ Parameter::Parameter(tok t)
   }
 }
 
-String Parameter::toString()
+string Parameter::toString()
 {
-  if (value == null) return name;
-  else if (name == null) return value;
+  if (value == "") return name;
+  else if (name == "") return value;
   return value;
 }

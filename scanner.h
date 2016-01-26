@@ -1,5 +1,6 @@
-#include "token.h"
+#pragma once
 #include <stdexcept>
+#include "token.h"
 
 void print_toks(vector<tok>& toks, ostream& o);
 void print_tok(tok t, ostream& o);

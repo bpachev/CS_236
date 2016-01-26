@@ -20,7 +20,10 @@ int main(int argc, char** argv)
     out << "Failure!" << endl;
     out << "  ";
     print_tok(p->curr,out);
+    delete p;
+    return 0;
   }
-  out << "Succes!" << endl;
+  out << "Success!" << endl;
   delete p;
+  return 0;
 }

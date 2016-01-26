@@ -1,9 +1,11 @@
-"include predicate.h"
+#include "predicate.h"
+#include "token.h"
 
 class Rule {
 public:
- Predicate result;
- vector<Predicate*> premises;
- void Rule::addPred(Predicate * pred)
- string toString();
-}
+  Predicate* result;
+  vector<Predicate*> premises;
+  void addPred(Predicate * pred);
+  ~Rule();
+  string toString();
+};

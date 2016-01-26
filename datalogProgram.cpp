@@ -4,24 +4,22 @@ string DatalogProgram::toString()
 {
   string res = pred_list_str("Schemes", schemes);
   res += pred_list_str("Facts", facts);
-  res += lheader("Rules", rules);
+  res += lheader((string)"Rules", rules.size());
 
   for (int i = 0; i < rules.size(); i++) {
     res += "  ";
-    res += rules[i].toString();
+    res += rules[i]->toString();
+    res += "\n";
   }
 
   res += pred_list_str("Queries", queries);
 
-  for (int k = 0; k < domain.size(); k++)
-  {
-    res += domain[k];
-  }
-
+  res += lheader("Domain", domain.size());
   set<string>::iterator it;
   for (it = domain.begin(); it != domain.end(); ++it)
   {
     res += *it;
+    res += "\n";
   }
   return res;
 }
@@ -37,6 +35,22 @@ DatalogProgram::~DatalogProgram()
   }
 }
 
+void DatalogProgram::addScheme(Predicate* p){
+  schemes.push_back(p);
+}
+
+void DatalogProgram::addFact(Predicate* p){
+  facts.push_back(p);
+}
+
+void DatalogProgram::addRule(Rule* r){
+  rules.push_back(r);
+}
+
+void DatalogProgram::addQuery(Predicate* p){
+  queries.push_back(p);
+}
+
 string DatalogProgram::lheader(string lname, int lsize)
 {
   string res = lname;
@@ -46,18 +60,19 @@ string DatalogProgram::lheader(string lname, int lsize)
   return res;
 }
 
-string DatalogProgram::pred_list_str(vector<Predicate>& l)
+string DatalogProgram::pred_list_str(string lname, vector<Predicate*>& l)
 {
   string res = lheader(lname, l.size());
-  for (int i = 0; i < res.size(); i++)
+  for (int i = 0; i < l.size(); i++)
   {
     res += "  ";
-    res += l[i].toString();
+    res += l[i]->toString();
+    res += "\n";
   }
   return res;
 }
 
-void DatalogProgram::del_pred_list(vector<Predicate>& l)
+void DatalogProgram::del_pred_list(vector<Predicate*>& l)
 {
   for (int i = 0; i < l.size(); i++)
   {
