@@ -1,0 +1,5 @@
+(ID,"blah",1)
+(ID,"blah",1)
+(ID,"blah",1)
+(EOF,"",2)
+Total Tokens = 4
