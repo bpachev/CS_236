@@ -1,11 +1,18 @@
-#pragma once
+#ifndef parser_h
+#define parser_h
 #include "scanner.h"
+#include "datalogProgram.h"
 
 class Parser
 {
  public:
    void parse(char * infile);
    tok curr;
+   DatalogProgram* prog;
+ 	 vector<Predicate*> predList;
+   Predicate* last_pred;
+   ~Parser();
+
  private:
    vector<tok> toks;
    vector<tok>::iterator it;
@@ -24,3 +31,4 @@ class Parser
    void parameter();
    void match(token t);
 };
+#endif

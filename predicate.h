@@ -1,4 +1,5 @@
-#pragma once
+#ifndef parameter_h
+#define parameter_h
 #include "parameter.h"
 
 class Predicate{
@@ -10,3 +11,4 @@ public:
   string toString();
   void addParam(tok t);
 };
+#endif

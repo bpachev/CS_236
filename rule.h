@@ -8,4 +8,5 @@ public:
   void addPred(Predicate * pred);
   ~Rule();
   string toString();
+  void setResult(Predicate * pred);
 };

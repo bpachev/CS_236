@@ -8,13 +8,15 @@ Parameter::Parameter(string v)
 
 Parameter::Parameter(tok t)
 {
+  name = "";
+  value = "";
   if (t.t == ID)
   {
     name = t.s;
   }
   else if (t.t == STRING)
   {
-    value = t.t;
+    value = t.s;
   }
 }
 

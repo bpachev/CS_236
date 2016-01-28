@@ -1,5 +1,4 @@
 #include "parser.h"
-#include "datalogProgram.h"
 
 /*datalogProgram	->	SCHEMES COLON scheme schemeList
 		        FACTS COLON factList
@@ -35,10 +34,13 @@ parameter	->	STRING
 parameter	->	ID*/
 
 
+Parser::~Parser()
+{
+	delete prog;
+}
+
 void Parser::parse(char * infile){
 	Scanner * s = new Scanner();
-	DatalogProgram* prog;
-	vector<Predicate*> predList;
 	try {
 		s->scan(infile);
 		// print_toks(s->toks,cout);
@@ -51,10 +53,8 @@ void Parser::parse(char * infile){
 		// prog->addScheme(p);
 		// cout << prog->toString() << endl;
 		datalogProgram();
-		cout << prog->toString() << endl;
 	}
 	catch (exception e) {
-		delete prog;
 		throw;
 	}
 }
@@ -108,13 +108,13 @@ void Parser::fact(){
 void Parser::rule(){
 	Rule * r = new Rule();
 	predicate();
-
+	r->setResult(last_pred);
 	match(COLON_DASH);
 	predicate(); predicateList();
 	match(PERIOD);
-	for (int i=0; i < predList.size(); i++)
+	for (unsigned int i=0; i < predList.size(); i++)
 	{
-		r.addPred(predList[i]);
+		r->addPred(predList[i]);
 	}
 	prog->addRule(r);
 	predList.clear();
@@ -130,7 +130,7 @@ void Parser::query()
 void Parser::predicateList(){
 	predList.clear();
 	try {
-	match(COMMA); predicate(); predList.push_back(last_pred);}
+	match(COMMA); predList.push_back(last_pred); predicate(); predList.push_back(last_pred);}
 	catch (exception& e) {return;}
 	predicateList();
 }
@@ -145,7 +145,6 @@ void Parser::predicate(){
 void Parser::parameterList(){
 	try {
 		match(COMMA);
-		last_pred.addParam(curr);
 		parameter();
 	}
 	catch (exception& e) {return;}
@@ -153,6 +152,7 @@ void Parser::parameterList(){
 }
 
 void Parser::parameter(){
+	last_pred->addParam(curr);
 	if (curr.t == STRING)
 	{
 		match(STRING);

@@ -6,7 +6,7 @@ string DatalogProgram::toString()
   res += pred_list_str("Facts", facts);
   res += lheader((string)"Rules", rules.size());
 
-  for (int i = 0; i < rules.size(); i++) {
+  for (unsigned int i = 0; i < rules.size(); i++) {
     res += "  ";
     res += rules[i]->toString();
     res += "\n";
@@ -29,7 +29,7 @@ DatalogProgram::~DatalogProgram()
   del_pred_list(schemes);
   del_pred_list(facts);
   del_pred_list(queries);
-  for (int i = 0; i < rules.size(); i++)
+  for (unsigned int i = 0; i < rules.size(); i++)
   {
     delete rules[i];
   }
@@ -63,7 +63,7 @@ string DatalogProgram::lheader(string lname, int lsize)
 string DatalogProgram::pred_list_str(string lname, vector<Predicate*>& l)
 {
   string res = lheader(lname, l.size());
-  for (int i = 0; i < l.size(); i++)
+  for (unsigned int i = 0; i < l.size(); i++)
   {
     res += "  ";
     res += l[i]->toString();
@@ -74,7 +74,7 @@ string DatalogProgram::pred_list_str(string lname, vector<Predicate*>& l)
 
 void DatalogProgram::del_pred_list(vector<Predicate*>& l)
 {
-  for (int i = 0; i < l.size(); i++)
+  for (unsigned int i = 0; i < l.size(); i++)
   {
     delete l[i];
   }

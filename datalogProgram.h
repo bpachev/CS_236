@@ -1,3 +1,5 @@
+#ifndef datalogProgram_h
+#define datalogProgram_h
 #include "token.h"
 #include "rule.h"
 #include <set>
@@ -21,3 +23,4 @@ public:
   string pred_list_str(string lname, vector<Predicate*>& l);
   string lheader(string lname, int lsize);
 };
+#endif

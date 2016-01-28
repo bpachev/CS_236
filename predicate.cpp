@@ -9,7 +9,7 @@ string Predicate::toString()
 {
   string res = name;
   res += "(";
-  for (int i = 0; i < params.size(); i++)
+  for (unsigned int i = 0; i < params.size(); i++)
   {
     if (i) res += ",";
     res += params[i]->toString();
@@ -25,7 +25,7 @@ void Predicate::addParam(tok t)
 
 Predicate::~Predicate()
 {
-  for (int i = 0; i < params.size(); i++)
+  for (unsigned int i = 0; i < params.size(); i++)
   {
     delete params[i];
   }

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef token_h
+#define token_h
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -19,3 +20,4 @@ struct tok
   token t; //type
   string s; //token string
 };
+#endif

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef scanner_h
+#define scanner_h
 #include <stdexcept>
 #include "token.h"
 
@@ -25,3 +26,4 @@ public:
   void set_new_state(char c);
   void add_tok(token tok_type);
 };
+#endif
