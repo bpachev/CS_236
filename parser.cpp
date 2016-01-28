@@ -38,6 +38,7 @@ parameter	->	ID*/
 void Parser::parse(char * infile){
 	Scanner * s = new Scanner();
 	DatalogProgram* prog;
+	vector<Predicate*> predList;
 	try {
 		s->scan(infile);
 		// print_toks(s->toks,cout);
@@ -45,11 +46,12 @@ void Parser::parse(char * infile){
 		it = toks.begin();
 		curr = *it;
 		prog = new DatalogProgram();
-		Predicate* p = new Predicate("BAR");
-		p->params.push_back(new Parameter((string)"FOO"));
-		prog->addScheme(p);
-		cout << prog->toString() << endl;
+		// Predicate* p = new Predicate("BAR");
+		// p->params.push_back(new Parameter((string)"FOO"));
+		// prog->addScheme(p);
+		// cout << prog->toString() << endl;
 		datalogProgram();
+		cout << prog->toString() << endl;
 	}
 	catch (exception e) {
 		delete prog;
@@ -95,33 +97,46 @@ void Parser::ruleList(){
 
 void Parser::scheme(){
 	predicate();
+	prog->addScheme(last_pred);
 }
 
 void Parser::fact(){
 	predicate(); match(PERIOD);
+	prog->addFact(last_pred);
 }
 
 void Parser::rule(){
+	Rule * r = new Rule();
 	predicate();
+
 	match(COLON_DASH);
 	predicate(); predicateList();
 	match(PERIOD);
+	for (int i=0; i < predList.size(); i++)
+	{
+		r.addPred(predList[i]);
+	}
+	prog->addRule(r);
+	predList.clear();
 }
 
 void Parser::query()
 {
 	predicate();
 	match(Q_MARK);
+	prog->addQuery(last_pred);
 }
 
 void Parser::predicateList(){
+	predList.clear();
 	try {
-	match(COMMA); predicate();}
+	match(COMMA); predicate(); predList.push_back(last_pred);}
 	catch (exception& e) {return;}
 	predicateList();
 }
 
 void Parser::predicate(){
+	last_pred = new Predicate(curr.s);
 	match(ID); match(LEFT_PAREN);
 	parameter(); parameterList();
 	match(RIGHT_PAREN);
@@ -130,6 +145,7 @@ void Parser::predicate(){
 void Parser::parameterList(){
 	try {
 		match(COMMA);
+		last_pred.addParam(curr);
 		parameter();
 	}
 	catch (exception& e) {return;}
