@@ -20,6 +20,7 @@ int main(int argc, char** argv)
     out << "Failure!" << endl;
     out << "  ";
     print_tok(p->curr,out);
+    // cout << e.what() << endl;
     delete p;
     return 0;
   }

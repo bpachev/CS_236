@@ -25,5 +25,6 @@ public:
   void state_from_char(char c);
   void set_new_state(char c);
   void add_tok(token tok_type);
+  string tok_string(token t);
 };
 #endif

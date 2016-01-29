@@ -52,6 +52,11 @@ void Scanner::add_tok(token tok_type)
   (toks).push_back(temp);
 }
 
+string Scanner::tok_string(token t)
+{
+  return token_names[t];
+}
+
 void print_toks(vector<tok>& toks,  ostream& s)
 {
   for (unsigned int i = 0; i < toks.size(); i++)

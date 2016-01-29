@@ -18,6 +18,7 @@ string DatalogProgram::toString()
   set<string>::iterator it;
   for (it = domain.begin(); it != domain.end(); ++it)
   {
+    res += "  ";
     res += *it;
     res += "\n";
   }

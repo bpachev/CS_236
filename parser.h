@@ -8,10 +8,13 @@ class Parser
  public:
    void parse(char * infile);
    tok curr;
+   Scanner * s;
+   Rule * r;
    DatalogProgram* prog;
  	 vector<Predicate*> predList;
    Predicate* last_pred;
    ~Parser();
+   Parser();
 
  private:
    vector<tok> toks;

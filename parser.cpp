@@ -33,26 +33,33 @@ parameterList	-> 	epsilon
 parameter	->	STRING
 parameter	->	ID*/
 
+Parser::Parser()
+{
+	s = new Scanner();
+}
 
 Parser::~Parser()
 {
 	delete prog;
+	delete s;
 }
 
 void Parser::parse(char * infile){
-	Scanner * s = new Scanner();
 	try {
 		s->scan(infile);
-		// print_toks(s->toks,cout);
+//		print_toks(s->toks,cout);
 		toks = s->toks;
+
 		it = toks.begin();
 		curr = *it;
 		prog = new DatalogProgram();
 		// Predicate* p = new Predicate("BAR");
 		// p->params.push_back(new Parameter((string)"FOO"));
 		// prog->addScheme(p);
-		// cout << prog->toString() << endl;
 		datalogProgram();
+//		cout << prog->toString() << endl;
+		match(END_FILE);
+//		cout << prog->toString() << endl;
 	}
 	catch (exception e) {
 		throw;
@@ -73,25 +80,25 @@ void Parser::datalogProgram(){
 
 void Parser::schemeList() {
 	try {scheme();}
-	catch (exception e) {return;}
+	catch (exception e) { return;}
 	schemeList();
 }
 
 void Parser::factList(){
 	try {fact();}
-	catch (exception e) {return;}
+	catch (exception e) { return;}
 	factList();
 }
 
 void Parser::queryList(){
 	try {query();}
-	catch (exception e) {return;}
+	catch (exception e) { return;}
 	queryList();
 }
 
 void Parser::ruleList(){
 	try {rule();}
-	catch (exception e) {return;}
+	catch (exception e) { return;}
 	ruleList();
 }
 
@@ -101,17 +108,33 @@ void Parser::scheme(){
 }
 
 void Parser::fact(){
-	predicate(); match(PERIOD);
+	predicate(); try{match(PERIOD);}
+	catch (exception& e)
+	{
+		delete last_pred;
+		predList.pop_back();
+		throw;
+	}
+
 	prog->addFact(last_pred);
 }
 
 void Parser::rule(){
-	Rule * r = new Rule();
 	predicate();
+	r = new Rule();
 	r->setResult(last_pred);
-	match(COLON_DASH);
-	predicate(); predicateList();
-	match(PERIOD);
+	try {
+		match(COLON_DASH);
+		predList.clear();
+		predicate(); predicateList();
+		match(PERIOD);
+  }
+	catch (exception& e) {
+		prog->del_pred_list(predList);
+		predList.clear();
+		delete r;
+		throw;
+	}
 	for (unsigned int i=0; i < predList.size(); i++)
 	{
 		r->addPred(predList[i]);
@@ -123,23 +146,37 @@ void Parser::rule(){
 void Parser::query()
 {
 	predicate();
-	match(Q_MARK);
+	try {match(Q_MARK);}
+	catch (exception& e)
+	{
+		predList.pop_back();
+		delete last_pred;
+		throw;
+	}
 	prog->addQuery(last_pred);
 }
 
 void Parser::predicateList(){
-	predList.clear();
 	try {
-	match(COMMA); predList.push_back(last_pred); predicate(); predList.push_back(last_pred);}
-	catch (exception& e) {return;}
+	match(COMMA); predicate();}
+	catch (exception& e) { return;}
 	predicateList();
 }
 
 void Parser::predicate(){
+	//  print_tok(curr,cout);
 	last_pred = new Predicate(curr.s);
-	match(ID); match(LEFT_PAREN);
-	parameter(); parameterList();
-	match(RIGHT_PAREN);
+	try {
+		match(ID); match(LEFT_PAREN);
+		parameter(); parameterList();
+		match(RIGHT_PAREN);
+	}
+	catch (exception& e){
+		delete last_pred;
+		throw;
+	}
+
+  predList.push_back(last_pred);
 }
 
 void Parser::parameterList(){
@@ -166,7 +203,11 @@ void Parser::parameter(){
 
 void Parser::match(token t)
 {
+//	print_tok(curr,cout);
+//	cout << s->tok_string(t) << endl;
 	if (t != curr.t) throw runtime_error("Tokens don't match.");
+	if (t == STRING) prog->add_dom_str(curr.s);
 	it++;
+	if (t==END_FILE || it == toks.end()) return;
 	curr = *it;
 }
