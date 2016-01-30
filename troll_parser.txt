@@ -1,0 +1,12 @@
+
+
+Schemes:
+  bob(A,B),
+
+Facts:
+  bob('4',bob,'2').bob(d,d).
+
+Rules:
+bob(A,B) :- bob(B,A).
+Queries:
+bob(X,Y)?
