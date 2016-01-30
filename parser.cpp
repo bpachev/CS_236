@@ -47,7 +47,6 @@ Parser::~Parser()
 void Parser::parse(char * infile){
 	try {
 		s->scan(infile);
-//		print_toks(s->toks,cout);
 		toks = s->toks;
 
 		it = toks.begin();
@@ -79,27 +78,35 @@ void Parser::datalogProgram(){
 }
 
 void Parser::schemeList() {
-	try {scheme();}
-	catch (exception e) { return;}
-	schemeList();
+	if (curr.t == ID)
+	{
+		scheme();
+		schemeList();
+	}
 }
 
 void Parser::factList(){
-	try {fact();}
-	catch (exception e) { return;}
-	factList();
+	if (curr.t == ID){
+		fact();
+		factList();
+	}
 }
 
 void Parser::queryList(){
-	try {query();}
-	catch (exception e) { return;}
-	queryList();
+	if (curr.t == ID)
+	{
+		query();
+		queryList();
+  }
+	else return;
 }
 
 void Parser::ruleList(){
-	try {rule();}
-	catch (exception e) { return;}
-	ruleList();
+	if (curr.t == ID)
+	{
+		rule();
+		ruleList();
+	}
 }
 
 void Parser::scheme(){
@@ -124,7 +131,12 @@ void Parser::rule(){
 	r = new Rule();
 	r->setResult(last_pred);
 	try {
-		match(COLON_DASH);
+		try {match(COLON_DASH);}
+		catch (exception& e)
+		{
+			predList.clear();
+			throw;
+		}
 		predList.clear();
 		predicate(); predicateList();
 		match(PERIOD);
@@ -157,10 +169,11 @@ void Parser::query()
 }
 
 void Parser::predicateList(){
-	try {
-	match(COMMA); predicate();}
-	catch (exception& e) { return;}
-	predicateList();
+	if (curr.t == COMMA)
+	{
+		match(COMMA); predicate();
+		predicateList();
+  }
 }
 
 void Parser::predicate(){
@@ -180,12 +193,12 @@ void Parser::predicate(){
 }
 
 void Parser::parameterList(){
-	try {
+	if (curr.t == COMMA)
+	{
 		match(COMMA);
 		parameter();
+		parameterList();
 	}
-	catch (exception& e) {return;}
-	parameterList();
 }
 
 void Parser::parameter(){
