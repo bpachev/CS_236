@@ -1,16 +1,16 @@
-#include "parser.h"
-#include "datalogDatabase.h"
 #ifndef interpreter_h
 #define interpreter_h
+#include "parser.h"
+#include "datalogDatabase.h"
 
-enum intepreter_level {PROJ3, PROJ4, PROJ5};
+enum interpreter_level {PROJ3, PROJ4, PROJ5};
 
-class Interpreter:
+class Interpreter
 {
 public:
-  datalogDatabase db;
+  DatalogDatabase db;
   Interpreter();
-  void run(ifstream in, ofstream out, interpreter_level level);
+  void run(char * infile, ostream& out, interpreter_level level);
 };
 
 

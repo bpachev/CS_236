@@ -6,20 +6,13 @@ Relation::Relation(vector<string> col_names)
   columns = col_names;
 }
 
-Relation::Relation(vector<Parameter>& params)
-{
-  for (int i = params; i < params.length(); i++)
-  {
-    columns.push_back(params[i].toString());
-  }
-}
 
 Relation Relation::select(vector<Constraint>& constraints)
 {
   Relation res = Relation(columns);
-  int l = constraints.length();
+  int l = constraints.size();
 
-  for (int j = 0; j < tuples.length(); j++)
+  for (int j = 0; j < tuples.size(); j++)
   {
    bool flag = true;
    for (int i = 0; i < l; i++)
@@ -30,17 +23,19 @@ Relation Relation::select(vector<Constraint>& constraints)
      }
    }
 
-   if(flag) res.tuples.push_back(entries[j]); // we know the entries will be traversed in sorted order
+   if(flag) res.tuples.push_back(tuples[j]); // we know the entries will be traversed in sorted order
   }
 
   return res;
 }
 
-Relation Relation::project(vector<int> newInds)
+Relation Relation::project(vector<int>& newInds)
 {
-  int l = newInds.length();
-  res = Relation(newColumns);
-  for (int i=0; i < tuples.length(); i++)
+  int l = newInds.size();
+  vector<string> newColumns;
+  for (int k = 0; k < l; k++) newColumns.push_back(columns[newInds[k]]);
+  Relation res = Relation(newColumns);
+  for (int i=0; i < tuples.size(); i++)
   {
     vector<string> newTuple;
     for (int j =0; j < l; j++)
@@ -55,8 +50,8 @@ Relation Relation::project(vector<int> newInds)
 
 Relation Relation::rename(vector<string> newNames)
 {
- res = Relation(newNames);
- for (i=0; i < tuples.length(); i++)
+ Relation res = Relation(newNames);
+ for (int i=0; i < tuples.size(); i++)
  {
    res.tuples.push_back(tuples[i]);
  }
@@ -65,15 +60,15 @@ Relation Relation::rename(vector<string> newNames)
 
 int Relation::size()
 {
-  return tuples.length();
+  return tuples.size();
 }
 
 string Relation::toString()
 {
- res = "\n";
- for (int i = 0; i < tuples.length(); i++)
+ string res = "\n";
+ for (int i = 0; i < tuples.size(); i++)
  {
-   res += tuple_to_string();
+   res += tuple_to_string(tuples[i]);
    res += "\n";
  }
  return res;
@@ -82,8 +77,8 @@ string Relation::toString()
 //utility function
 string tuple_to_string(vector<string>& t)
 {
- res = "";
- for (int j = 0; j < t.length(); j++)
+ string res = "";
+ for (int j = 0; j < t.size(); j++)
  {
   res += t[j];
  }
@@ -103,11 +98,11 @@ Constraint::Constraint(int indexInTuple,string value)
  ind = -1;
 }
 
-bool isMet(vector<string>& tuple)
+bool Constraint::isMet(vector<string>& tuple)
 {
-  if (index > 0)
+  if (ind > 0)
   {
-    return (tuple[indexInTuple] == tuple[index]);
+    return (tuple[indexInTuple] == tuple[ind]);
   }
   else return (tuple[indexInTuple] == val);
 }

@@ -2,17 +2,17 @@
 
 Interpreter::Interpreter()
 {
- db = datalogDatabase();
+ db = DatalogDatabase();
 }
 
-void Interpreter::run(char * infile, ofstream out, interpreter_level level)
+void Interpreter::run(char * infile, ostream& out, interpreter_level level)
 {
   Parser p = Parser();
-  p.parse(char* infile);
-  db.addRelations(p.prog->schemeList);
-  db.loadFacts(p.prog->factList);
+  p.parse(infile);
+  db.addRelations(p.prog->schemes);
+  db.loadFacts(p.prog->facts);
 
-  switch(interpreter_level){
+  switch(level){
     case PROJ3:
      // do nothing
      break;
@@ -28,7 +28,5 @@ void Interpreter::run(char * infile, ofstream out, interpreter_level level)
   }
 
   // evaluate queries
-  db.evalQueries(p.prog->queryList, out);
+  db.evalQueries(p.prog->queries, out);
 }
-
-void Interpreter::load

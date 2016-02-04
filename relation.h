@@ -1,5 +1,6 @@
 #ifndef Relation_h
 #define Relation_h
+#include "datalogProgram.h"
 #include <algorithm>
 
 class Constraint
@@ -7,7 +8,7 @@ class Constraint
 public:
   string val;
   int ind;
-  bool is_null;
+  int indexInTuple;
   //two columns are constrained to be equal
   Constraint(int indexInTuple, int index);
   //two rows are constrained to be equal
@@ -19,7 +20,7 @@ struct tupleCompare
 {
  bool operator()(const vector<string>& A, const vector<string>& B) const
  {
-   int l = A.length();
+   int l = A.size();
    for (int i = 0; i < l; i++)
    {
      if (A[i] < B[i]) return true;
@@ -35,10 +36,10 @@ public:
  vector<string> columns;
  vector<vector<string>> tuples;
  Relation(vector<string> col_names);
- Relation(vector<Parameter>& params);
- Relation select(vector<Constraint> constraints);
- Relation project();
- Relation rename();
+ Relation select(vector<Constraint>& constraints);
+ Relation project(vector<int>& newInds);
+ Relation rename(vector<string> newNames);
+ int size();
  string toString();
 };
 
