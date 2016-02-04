@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.6)
 project(CS236)
-set(SRC_FILES parser/main.cpp datalogProgram.cpp parameter.cpp parser.cpp predicate.cpp rule.cpp scanner.cpp relation.cpp datalogDatabase.cpp interpeter.h interpreter.cpp relation.h datalogDatabase.h datalogProgram.h parameter.h parser.h predicate.h rule.h scanner.h token.h utils.h)
+set(SRC_FILES lab3_main.cpp datalogProgram.cpp parameter.cpp parser.cpp predicate.cpp rule.cpp scanner.cpp relation.cpp datalogDatabase.cpp interpreter.h interpreter.cpp relation.h datalogDatabase.h datalogProgram.h parameter.h parser.h predicate.h rule.h scanner.h token.h utils.h)
 set(CMAKE_CXX_FLAGS -std=c++11)
 add_executable(lab2 ${SRC_FILES})

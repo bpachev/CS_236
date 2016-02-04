@@ -1,11 +1,14 @@
 #include "DatalogDatabase.h"
 
-DatalogDatabase::DatalogDatabase()
-{
+
+void DatalogDatabase::addRelations(vector<Predicate*>& schemeList){
 
 }
 
-DatalogDatabase::addRelation()
-{
-  
+void DatalogDatabase::loadFacts(vector<Predicate*>& factList){
+
+}
+
+void DatalogDatabase::evalQueries(vector<Predicate*>& queryList){
+
 }
