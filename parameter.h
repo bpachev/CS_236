@@ -7,4 +7,5 @@ class Parameter {
    Parameter(string v);
    Parameter(tok t);
    string toString();
+   static bool isLiteral(string s);
 };

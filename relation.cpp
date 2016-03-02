@@ -17,7 +17,7 @@ Relation Relation::select(vector<Constraint>& constraints)
    bool flag = true;
    for (int i = 0; i < l; i++)
    {
-     if (!constraints[i].isMet(t))
+     if (!constraints[i].isMet(t.data))
      {
        flag = false;
      }
@@ -35,6 +35,7 @@ Relation Relation::project(vector<int>& newInds)
   vector<string> newColumns;
   for (int k = 0; k < l; k++) newColumns.push_back(columns[newInds[k]]);
   Relation res = Relation(newColumns);
+  if (l <=0 ) return res;
   for (auto f : tuples)
   {
     vector<string> newTuple;
@@ -42,7 +43,7 @@ Relation Relation::project(vector<int>& newInds)
     {
       newTuple.push_back(f[newInds[j]]);
     }
-    res.add(newTuple);
+    res.add(Tuple(newTuple));
   }
 
   return res;
@@ -58,28 +59,35 @@ Relation Relation::rename(vector<string> newNames)
  return res;
 }
 
-int Relation::size()
-{
-  return tuples.size();
-}
-
 void Relation::add(vector<string> v)
 {
-  cout << "called add " << tuple_to_string(v) << endl;
-  tuples.insert(v);
+//  cout << "called add " << tuple_to_string(v) << endl;
+  tuples.insert(Tuple(v));
 }
 
 string Relation::toString()
 {
- string res = "\n";
+ string res = "";
+ // res += tuple_to_string(columns);
+ // res += "\n";
  for (auto t: tuples)
  {
-   res += tuple_to_string(t);
+   res += "  ";
+   res += t.namedToString(columns);
    res += "\n";
  }
  return res;
 }
 
+void Relation::add(Tuple t)
+{
+  tuples.insert(t);
+}
+
+int Relation::size()
+{
+  return tuples.size();
+}
 
 
 //utility function
@@ -88,8 +96,21 @@ string tuple_to_string(vector<string>& t)
  string res = "";
  for (int j = 0; j < t.size(); j++)
  {
+  if (j)  res += " ";
   res += t[j];
-  res += " ";
+ }
+ return res;
+}
+
+string named_tuple_to_string(vector<string>& t, vector<string>& names)
+{
+ string res = "";
+ for (int j = 0; j < t.size(); j++)
+ {
+  if (j)  res += " ";
+  res += names[j];
+  res += "=";
+  res += t[j];
  }
  return res;
 }

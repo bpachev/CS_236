@@ -26,3 +26,8 @@ string Parameter::toString()
   else if (name == "") return value;
   return value;
 }
+
+bool Parameter::isLiteral(string s)
+{
+  return (s[0] == '\'');
+}
