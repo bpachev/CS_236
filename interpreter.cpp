@@ -9,6 +9,7 @@ void Interpreter::run(char * infile, ostream& out, interpreter_level level)
 {
   Parser p = Parser();
   p.parse(infile);
+  cout << p.toString() << endl;
   db.addRelations(p.prog->schemes);
   db.loadFacts(p.prog->facts);
 

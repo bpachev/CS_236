@@ -5,6 +5,11 @@ Predicate::Predicate(string n)
   name = n;
 }
 
+vector<string> Predicate::paramNames()
+{
+ 
+}
+
 string Predicate::toString()
 {
   string res = name;
