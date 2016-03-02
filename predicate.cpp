@@ -7,7 +7,12 @@ Predicate::Predicate(string n)
 
 vector<string> Predicate::paramNames()
 {
- 
+  vector<string> res;
+  for (unsigned int i =0; i < params.size(); i++)
+  {
+    res.push_back(params[i]->toString());
+  }
+  return res;
 }
 
 string Predicate::toString()

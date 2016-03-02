@@ -9,6 +9,7 @@ public:
   Predicate(string n);
   ~Predicate();
   string toString();
+  vector<string> paramNames();
   void addParam(tok t);
 };
 #endif

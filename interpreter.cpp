@@ -9,9 +9,12 @@ void Interpreter::run(char * infile, ostream& out, interpreter_level level)
 {
   Parser p = Parser();
   p.parse(infile);
-  cout << p.toString() << endl;
+  cout << p.prog->toString() << endl;
   db.addRelations(p.prog->schemes);
+  cout << "added relations " << endl;
   db.loadFacts(p.prog->facts);
+  cout << "loaded facts " << endl;
+  cout << "DB DUMP" << endl << db.toString() << endl;
 
   switch(level){
     case PROJ3:
