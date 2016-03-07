@@ -35,6 +35,9 @@ public:
  Relation select(vector<Constraint>& constraints);
  Relation project(vector<int>& newInds);
  Relation rename(vector<string> newNames);
+ Relation join(Relation& other);
+ //add the contents of another relation to this one
+ void union(Relation& other);
  void add(vector<string> v);
  void add(Tuple t);
  int size();

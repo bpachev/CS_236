@@ -6,6 +6,73 @@ Relation::Relation(vector<string> col_names)
   columns = col_names;
 }
 
+void Relation::union(Relation& other)
+{
+   for (auto t: other.tuples)
+   {
+     add(t);
+   }
+}
+
+
+//Join this relation with another relation, creating a new relation
+//Step 1: Determine the column names
+Relation Relation::join(Relation& other)
+{
+  //initialize the columns of the new relation to be those of the first table
+  vector<string> new_names = columns;
+  vector<string> ocols = other.columns;
+  int n_othercols = ocols.size();
+  int ncols = colums.size();
+  // if join_map[i] is -1, then column i from table other is not found in the first table
+  // if join_map[i] = j >=0, then column i from table other is the same as column j in the first table.
+  int join_map[n_othercols];
+
+  for (size_t i = 0; i < n_othercols; i++)
+  {
+    join_map[i] = -1;
+    for (size_t j = 0; j < ncols; j++)
+    {
+      //If one column name is the same as another
+      if (columns[j] == ocols[i]) {
+        join_map[i] = j;
+        break; // don't need to look any further, as there are no duplicate column names in a single relation
+      }
+    }
+
+    // if the current column in table other is not in the first table, add it to the new columns
+    if (join_map[i] == -1)
+    {
+      new_names.push_back(ocols[i]);
+    }
+  }
+
+  Relation res = Relation(new_names);
+
+  for (auto t1: tuples)
+  {
+    for (auto t2: other.tuples)
+    {
+      vector<string> newData = t1.data;
+      bool is_compat = true;
+      for (size_t k  = 0; k < t2.size(); k++)
+      {
+        if (join_map[k] >= 0)
+        {
+          if (t2[k] != t1[join_map[k]])
+          {
+            join_map = false;
+            break;
+          }
+        }
+        else newData.push_back(t2[k]);
+      }
+      if (is_compat) res.add(Tuple(newData));
+    }
+  }
+
+  return res;
+}
 
 Relation Relation::select(vector<Constraint>& constraints)
 {
