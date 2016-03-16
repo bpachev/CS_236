@@ -1,1 +1,1 @@
-valgrind: ./../database: No such file or directory
+valgrind: ./../datalog1: No such file or directory

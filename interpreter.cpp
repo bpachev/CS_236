@@ -21,7 +21,7 @@ void Interpreter::run(char * infile, ostream& out, interpreter_level level)
 
   if (level != PROJ3)
   {
-    out << "Rule Evaluation " << endl;
+    out << "Rule Evaluation" << endl << endl;
     db.addRules(p.prog->rules);
   }
 

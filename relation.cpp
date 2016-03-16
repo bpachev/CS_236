@@ -10,7 +10,7 @@ void Relation::unionWith(Relation& other, ostream& out)
 {
    for (auto t: other.tuples)
    {
-     if (tuples.find(t) != tuples.end()) out << "  " << t.namedToString(columns) << endl;
+     if (tuples.find(t) == tuples.end()) out << "  " << t.namedToString(columns) << endl;
      add(t);
    }
 }
@@ -110,9 +110,9 @@ Relation Relation::project(vector<string> names)
       }
     }
   }
-  cout << "Projecting onto cols ";
-  for (size_t i=0; i < newCols.size(); i++) cout << newCols[i] << " ";
-  cout << endl;
+  // cout << "Projecting onto cols ";
+  // for (size_t i=0; i < newCols.size(); i++) cout << newCols[i] << " ";
+  // cout << endl;
 
   return project(newCols);
 }

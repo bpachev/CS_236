@@ -32,13 +32,10 @@ void print_contraints(vector<Constraint> c)
   cout << endl;
 }
 
-void DatalogDatabase::evalQuery(Predicate* query, ostream& out)
+//create all the info needed to select, project, and rename in order to evaluate the given query
+void make_query_info(Predicate* query, vector<Constraint>& constraints, vector<int>& projection_inds, vector<string>& new_names)
 {
-  vector<int> projection_inds;
-  vector<string> new_names;
-  Relation * r = relations[query->name];
   vector<string> pnames = query->paramNames();
-  vector<Constraint> constraints;
   for (unsigned int j =0; j < pnames.size(); j++)
   {
     if (Parameter::isLiteral(pnames[j]))
@@ -65,6 +62,17 @@ void DatalogDatabase::evalQuery(Predicate* query, ostream& out)
       new_names.push_back(pnames[j]);
     }
   }
+}
+
+void DatalogDatabase::evalQuery(Predicate* query, ostream& out)
+{
+  vector<int> projection_inds;
+  vector<string> new_names;
+  Relation * r = relations[query->name];
+  vector<string> pnames = query->paramNames();
+  vector<Constraint> constraints;
+  make_query_info(query, constraints, projection_inds, new_names);
+
   out << query->toString() << "?";
 //    print_contraints(constraints);
   Relation res = r->select(constraints);
@@ -161,16 +169,24 @@ void DatalogDatabase::evaluateRule(Rule* r, ostream& out)
   //step 1 determine the relation to be updated
 //  cout << "evaluating rule "+r->toString() << endl;
   Relation * target = relations[r->result->name];
-  out << target->toString() << endl;
+  out << r->toString() << endl;
 
   //step 2 init the first relation
   Predicate * first_pred = r->premises[0];
-  Relation res = relations[first_pred->name]->rename(first_pred->paramNames());
+  vector<int> projection_inds1;
+  vector<string> new_names1;
+  vector<Constraint> constraints1;
+  make_query_info(first_pred, constraints1, projection_inds1, new_names1);
+  Relation res = relations[first_pred->name]->select(constraints1).project(projection_inds1).rename(new_names1);
 //  cout << res.toString() << endl;
   for (size_t i = 1; i < r->premises.size(); i++)
   {
     Predicate * p = r->premises[i];
-    Relation temp = relations[p->name]->rename(p->paramNames());
+    vector<int> projection_inds;
+    vector<string> new_names;
+    vector<Constraint> constraints;
+    make_query_info(p, constraints, projection_inds, new_names);
+    Relation temp = relations[p->name]->select(constraints).project(projection_inds).rename(new_names);
     res = res.join(temp);
 //    cout << temp.toString() << endl;
 //    cout << res.toString() << endl;
