@@ -1,6 +1,5 @@
 #include "datalogDatabase.h"
 
-
 void DatalogDatabase::addRelations(vector<Predicate*>& schemeList){
   unsigned int i;
   for (i=0; i < schemeList.size(); i++)
@@ -105,6 +104,81 @@ void DatalogDatabase::dump_relations(ostream& out)
     out << pair.first << endl;
     out << pair.second->toString() << endl;
   }
+}
+
+void DatalogDatabase::addRules(vector<Rule*> ruleList)
+{
+  //for each rule, I get the name (as an index into stuff)
+  rules = ruleList;
+}
+
+void DatalogDatabase::dump_rules(ostream& out)
+{
+  for (size_t k = 0; k < rules.size(); k++)
+  {
+    out << rules[k]->toString() << endl << endl;
+  }
+}
+
+void DatalogDatabase::bruteEvalRules(ostream& out)
+{
+  int ntuples = totalTuples();
+  int lastTuples = -1;
+  int nits = 0;
+
+  while (ntuples != lastTuples)
+  {
+    for (size_t k = 0; k < rules.size(); k++)
+    {
+      evaluateRule(rules[k], out);
+    }
+    lastTuples = ntuples;
+    ntuples = totalTuples();
+    nits++;
+  }
+
+  out << endl << "Converged after " << nits << " passes through the Rules." << endl << endl;
+}
+
+void DatalogDatabase::smartEvalRules(ostream& out)
+{
+
+}
+
+int DatalogDatabase::totalTuples()
+{
+  int res = 0;
+  for (auto const & pair: relations)
+  {
+    res += pair.second->size();
+  }
+  return res;
+}
+
+//beware of stack smashing
+void DatalogDatabase::evaluateRule(Rule* r, ostream& out)
+{
+  //step 1 determine the relation to be updated
+//  cout << "evaluating rule "+r->toString() << endl;
+  Relation * target = relations[r->result->name];
+  out << target->toString() << endl;
+
+  //step 2 init the first relation
+  Predicate * first_pred = r->premises[0];
+  Relation res = relations[first_pred->name]->rename(first_pred->paramNames());
+//  cout << res.toString() << endl;
+  for (size_t i = 1; i < r->premises.size(); i++)
+  {
+    Predicate * p = r->premises[i];
+    Relation temp = relations[p->name]->rename(p->paramNames());
+    res = res.join(temp);
+//    cout << temp.toString() << endl;
+//    cout << res.toString() << endl;
+  }
+
+  res = res.project(r->result->paramNames());
+//  cout << res.toString();
+  target->unionWith(res, out);
 }
 
 string DatalogDatabase::toString()

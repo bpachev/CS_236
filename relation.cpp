@@ -6,10 +6,11 @@ Relation::Relation(vector<string> col_names)
   columns = col_names;
 }
 
-void Relation::union(Relation& other)
+void Relation::unionWith(Relation& other, ostream& out)
 {
    for (auto t: other.tuples)
    {
+     if (tuples.find(t) != tuples.end()) out << "  " << t.namedToString(columns) << endl;
      add(t);
    }
 }
@@ -22,8 +23,8 @@ Relation Relation::join(Relation& other)
   //initialize the columns of the new relation to be those of the first table
   vector<string> new_names = columns;
   vector<string> ocols = other.columns;
-  int n_othercols = ocols.size();
-  int ncols = colums.size();
+  size_t n_othercols = ocols.size();
+  size_t ncols = columns.size();
   // if join_map[i] is -1, then column i from table other is not found in the first table
   // if join_map[i] = j >=0, then column i from table other is the same as column j in the first table.
   int join_map[n_othercols];
@@ -55,13 +56,13 @@ Relation Relation::join(Relation& other)
     {
       vector<string> newData = t1.data;
       bool is_compat = true;
-      for (size_t k  = 0; k < t2.size(); k++)
+      for (int k  = 0; k < t2.size(); k++)
       {
         if (join_map[k] >= 0)
         {
           if (t2[k] != t1[join_map[k]])
           {
-            join_map = false;
+            is_compat = false;
             break;
           }
         }
@@ -94,6 +95,26 @@ Relation Relation::select(vector<Constraint>& constraints)
   }
 
   return res;
+}
+
+Relation Relation::project(vector<string> names)
+{
+  vector<int> newCols;
+  for (size_t k = 0; k < names.size(); k++)
+  {
+    for (size_t j = 0; j < columns.size(); j++) {
+      if (names[k] == columns[j])
+      {
+        newCols.push_back(j);
+        break;
+      }
+    }
+  }
+  cout << "Projecting onto cols ";
+  for (size_t i=0; i < newCols.size(); i++) cout << newCols[i] << " ";
+  cout << endl;
+
+  return project(newCols);
 }
 
 Relation Relation::project(vector<int>& newInds)
@@ -161,7 +182,7 @@ int Relation::size()
 string tuple_to_string(vector<string>& t)
 {
  string res = "";
- for (int j = 0; j < t.size(); j++)
+ for (size_t j = 0; j < t.size(); j++)
  {
   if (j)  res += " ";
   res += t[j];
@@ -172,7 +193,7 @@ string tuple_to_string(vector<string>& t)
 string named_tuple_to_string(vector<string>& t, vector<string>& names)
 {
  string res = "";
- for (int j = 0; j < t.size(); j++)
+ for (size_t j = 0; j < t.size(); j++)
  {
   if (j)  res += " ";
   res += names[j];
