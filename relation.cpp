@@ -16,19 +16,10 @@ void Relation::unionWith(Relation& other, ostream& out)
 }
 
 
-//Join this relation with another relation, creating a new relation
-//Step 1: Determine the column names
-Relation Relation::join(Relation& other)
+void init_join_map(int * join_map, vector<string>& columns, vector<string>& ocols, vector<string>& new_names)
 {
-  //initialize the columns of the new relation to be those of the first table
-  vector<string> new_names = columns;
-  vector<string> ocols = other.columns;
   size_t n_othercols = ocols.size();
   size_t ncols = columns.size();
-  // if join_map[i] is -1, then column i from table other is not found in the first table
-  // if join_map[i] = j >=0, then column i from table other is the same as column j in the first table.
-  int join_map[n_othercols];
-
   for (size_t i = 0; i < n_othercols; i++)
   {
     join_map[i] = -1;
@@ -47,6 +38,19 @@ Relation Relation::join(Relation& other)
       new_names.push_back(ocols[i]);
     }
   }
+}
+
+//Join this relation with another relation, creating a new relation
+//Step 1: Determine the column names
+Relation Relation::join(Relation& other)
+{
+  //initialize the columns of the new relation to be those of the first table
+  vector<string> new_names = columns;
+  vector<string> ocols = other.columns;
+  // if join_map[i] is -1, then column i from table other is not found in the first table
+  // if join_map[i] = j >=0, then column i from table other is the same as column j in the first table.
+  int join_map[other.columns.size()];
+  init_join_map(join_map, columns, ocols, new_names);
 
   Relation res = Relation(new_names);
 
