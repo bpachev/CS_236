@@ -35,16 +35,21 @@ void graph::add_node(){
   nodes.push_back(node());
 }
 
+bool graph::has_edge(int i, int j)
+{
+  return nodes[i].neighbors.find(j) != nodes[i].neighbors.end();
+}
+
 string graph::toString()
 {
   stringstream res;
   for (size_t i = 0; i < nodes.size(); i++)
   {
-    res << i << ":";
-    int j;
+    res << "  R" << i << ":";
+  //  int j;
     for (auto j: nodes[i].neighbors)
     {
-      res << " " << j;
+      res << " R" << j;
     }
     res << endl;
   }
@@ -53,7 +58,7 @@ string graph::toString()
 
 void graph::explore(int node)
 {
-  int other;
+//  int other;
   nodes[node].visited = true;
   for (auto other: nodes[node].neighbors)
   {
@@ -61,7 +66,9 @@ void graph::explore(int node)
     explore(other);
   }
 
+  nodes[node].pos_num = pos_num;
   temp_node_arr.push_back(node);
+  pos_num++;
 }
 
 string graph::pos_nums()
@@ -70,7 +77,7 @@ string graph::pos_nums()
   DFSForest();
   for (size_t i = 0; i< nodes.size(); i++)
   {
-    res << i << " " << nodes[i].pos_num << endl;
+    res << "  R" << i << ": " << nodes[i].pos_num << endl;
   }
   return res.str();
 }
@@ -92,7 +99,7 @@ vector<vector<int>> graph::SCC()
   size_t nnodes = nodes.size();
   graph g = reverse();
   vector<int> reverse_search_order = g.DFSForest();
-  cout << endl << "Reversed Graph" << endl << g.toString() << endl << endl;
+  //cout << endl << "Reversed Graph" << endl << g.toString() << endl << endl;
   vector<vector<int>> components;
 
 
@@ -104,8 +111,8 @@ vector<vector<int>> graph::SCC()
     temp_node_arr.clear();
     explore(start_node);
     sort(temp_node_arr.begin(), temp_node_arr.end());
-    for (size_t k=0;k<temp_node_arr.size();k++) cout << temp_node_arr[k] << " ";
-    cout << endl;
+//    for (size_t k=0;k<temp_node_arr.size();k++) cout << temp_node_arr[k] << " ";
+//    cout << endl;
     components.push_back(temp_node_arr);
   }
   //cout << endl;

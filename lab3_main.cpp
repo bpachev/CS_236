@@ -12,5 +12,5 @@ int main (int argc, char** argv)
   out.open(argv[2]);
 
   Interpreter i = Interpreter();
-  i.run(argv[1], out, PROJ4);
+  i.run(argv[1], out, PROJ5);
 }

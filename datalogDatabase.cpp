@@ -148,9 +148,84 @@ void DatalogDatabase::bruteEvalRules(ostream& out)
   out << endl << "Converged after " << nits << " passes through the Rules." << endl << endl;
 }
 
+void DatalogDatabase::fixed_point(vector<int> rule_inds, ostream &out)
+{
+  int ntuples = totalTuples();
+  int lastTuples = -1;
+  int nits = 0;
+
+  while (ntuples != lastTuples)
+  {
+    for (size_t k = 0; k < rule_inds.size(); k++)
+    {
+      evaluateRule(rules[rule_inds[k]], out);
+    }
+    lastTuples = ntuples;
+    ntuples = totalTuples();
+    nits++;
+  }
+  out << endl;
+}
+
+// is the first dependant on the second?
+bool isRuleDependant(Rule * first, Rule * second)
+{
+  for (size_t k = 0; k < first->premises.size(); k++)
+  {
+    if (second->result->name == first->premises[k]->name) return true;
+  }
+  return false;
+}
+
 void DatalogDatabase::smartEvalRules(ostream& out)
 {
+  int nrules = rules.size();
+  graph depend_graph = graph(nrules);
+  for (int i=0; i < nrules; i++)
+  {
+    for (int j = 0; j < nrules; j++)
+    {
+      //check if rule i depends on j
+      if (isRuleDependant(rules[i], rules[j])) depend_graph.add_edge(i, j);
+    }
 
+  }
+
+  //ouput dependancy graph
+  out << "Dependency Graph" << endl;
+  out << depend_graph.toString() << endl;
+  out << "Reverse Graph" << endl;
+  graph rg = depend_graph.reverse();
+  out << rg.toString() << endl;
+  vector<int> pnums = rg.DFSForest();
+  out << "Postorder Numbers"  << endl;
+  out << rg.pos_nums() << endl;
+  out << "SCC Search Order" << endl;
+  for (int i = 0; i < nrules; i++)
+  {
+    out << "  R" << pnums[nrules-i-1] << endl;
+  }
+  out<<endl;
+
+  vector<vector<int>> comps = depend_graph.SCC();
+  for (size_t c= 0; c < comps.size(); c++)
+  {
+    out << "SCC:";
+    size_t csize = comps[c].size();
+    for (size_t i = 0; i < csize; i++)
+    {
+      out << " R" << comps[c][i];
+    }
+    out << endl;
+    if (csize == 1 && !depend_graph.has_edge(comps[c][0], comps[c][0]))
+    {
+      evaluateRule(rules[comps[c][0]], out);
+      out << endl;
+      continue;
+    }
+    fixed_point(comps[c], out);
+  }
+  out << "Rule Evaluation Complete" << endl << endl;
 }
 
 int DatalogDatabase::totalTuples()

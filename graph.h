@@ -13,6 +13,7 @@ public:
   graph(int num_nodes);
   graph reverse();
   void add_edge(int source, int dest);
+  bool has_edge(int i, int j);
   void add_node();
   vector<vector<int>> SCC();
   //return the indices of the nodes searched, in order of traversal

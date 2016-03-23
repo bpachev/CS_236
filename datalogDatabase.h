@@ -1,6 +1,7 @@
 #ifndef datalogDatabase_h
 #define datalogDatabase_h
 #include "relation.h"
+#include "graph.h"
 #include <map>
 
 using namespace std;
@@ -22,6 +23,7 @@ public:
  void smartEvalRules(ostream& out);
  int totalTuples();
  void evaluateRule(Rule* r, ostream& out);
+ void fixed_point(vector<int> rule_inds, ostream &out);
 };
 
 #endif
