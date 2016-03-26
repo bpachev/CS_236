@@ -177,6 +177,14 @@ bool isRuleDependant(Rule * first, Rule * second)
   return false;
 }
 
+void print_rules(int nrules, vector<int> pnums, ostream& out)
+{
+  for (int i = 0; i < nrules; i++)
+  {
+    out << "  R" << pnums[nrules-i-1] << endl;
+  }
+}
+
 void DatalogDatabase::smartEvalRules(ostream& out)
 {
   int nrules = rules.size();
@@ -201,10 +209,7 @@ void DatalogDatabase::smartEvalRules(ostream& out)
   out << "Postorder Numbers"  << endl;
   out << rg.pos_nums() << endl;
   out << "SCC Search Order" << endl;
-  for (int i = 0; i < nrules; i++)
-  {
-    out << "  R" << pnums[nrules-i-1] << endl;
-  }
+  print_rules(nrules, pnums, out);
   out<<endl;
 
   vector<vector<int>> comps = depend_graph.SCC();
